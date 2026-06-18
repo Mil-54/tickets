@@ -82,47 +82,34 @@
       </a>
     </div>
   </header>
+{% endif %}
 
-  <!-- Flash messages -->
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    <div class="flash-container" id="flashContainer">
-      {% for category, message in messages %}
-      <div class="flash flash-{{ category }}">
-        <i class="fa-solid {% if category == 'success' %}fa-circle-check{% elif category == 'error' %}fa-circle-xmark{% elif category == 'warning' %}fa-triangle-exclamation{% else %}fa-circle-info{% endif %}"></i>
-        {{ message }}
-        <button class="flash-close" onclick="this.parentElement.remove()">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-      </div>
-      {% endfor %}
+<!-- Flash messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="flash-container {% if not current_user.is_authenticated %}flash-fixed{% endif %}" id="flashContainer">
+    {% for category, message in messages %}
+    <div class="flash flash-{{ category }}">
+      <i class="fa-solid {% if category == 'success' %}fa-circle-check{% elif category == 'error' %}fa-circle-xmark{% elif category == 'warning' %}fa-triangle-exclamation{% else %}fa-circle-info{% endif %}"></i>
+      {{ message }}
+      <button class="flash-close" onclick="this.parentElement.remove()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
     </div>
-    {% endif %}
-  {% endwith %}
+    {% endfor %}
+  </div>
+  {% endif %}
+{% endwith %}
 
+{% if current_user.is_authenticated %}
   <div class="page-content">
-    {% block content %}{% endblock %}
+{% endif %}
+
+{% block content %}{% endblock %}
+
+{% if current_user.is_authenticated %}
   </div>
 </main>
-
-{% else %}
-  <!-- Layout sin auth -->
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    <div class="flash-container flash-fixed" id="flashContainer">
-      {% for category, message in messages %}
-      <div class="flash flash-{{ category }}">
-        <i class="fa-solid {% if category == 'success' %}fa-circle-check{% elif category == 'error' %}fa-circle-xmark{% elif category == 'warning' %}fa-triangle-exclamation{% else %}fa-circle-info{% endif %}"></i>
-        {{ message }}
-        <button class="flash-close" onclick="this.parentElement.remove()">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-      </div>
-      {% endfor %}
-    </div>
-    {% endif %}
-  {% endwith %}
-  {% block content %}{% endblock %}
 {% endif %}
 
 <script src="{{ url_for('static', filename='js/app.js') }}"></script>
