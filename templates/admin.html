@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% block title %}Gestión de Usuarios — TicketFlow{% endblock %}
+{% block page_title %}<i class="fa-solid fa-users-gear"></i> Gestión de Usuarios{% endblock %}
+
+{% block content %}
+
+<div class="card">
+  <div class="card-header">
+    <h3><i class="fa-solid fa-users"></i> Usuarios registrados <span class="badge-count">{{ usuarios | length }}</span></h3>
+  </div>
+
+  <div class="ticket-table-wrapper">
+    <table class="ticket-table" id="usersTable">
+      <thead>
+        <tr>
+          <th>Usuario</th>
+          <th>Correo</th>
+          <th>Rol</th>
+          <th>Estado</th>
+          <th>Tickets</th>
+          <th>Registrado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in usuarios %}
+        <tr class="{% if not u.is_active %}row-inactive{% endif %}">
+          <td>
+            <div class="user-mini">
+              <div class="user-avatar" style="background: {{ u.avatar_color }}">
+                {{ u.initials }}
+              </div>
+              <div>
+                <p class="user-name-cell">{{ u.username }}</p>
+                {% if u.id == current_user.id %}
+                <small class="text-muted">(tú)</small>
+                {% endif %}
+              </div>
+            </div>
+          </td>
+          <td><code class="email-code">{{ u.email }}</code></td>
+          <td>
+            {% if u.role == 'agente' %}
+            <span class="badge badge-agente"><i class="fa-solid fa-shield-halved"></i> Agente</span>
+            {% else %}
+            <span class="badge badge-cliente"><i class="fa-solid fa-user"></i> Cliente</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if u.is_active %}
+            <span class="badge badge-activo"><i class="fa-solid fa-circle"></i> Activo</span>
+            {% else %}
+            <span class="badge badge-inactivo"><i class="fa-regular fa-circle"></i> Inactivo</span>
+            {% endif %}
+          </td>
+          <td>
+            <span class="ticket-count">
+              {{ u.created_tickets | length }}
+              <small>creados</small>
+            </span>
+          </td>
+          <td><time>{{ u.created_at.strftime('%d/%m/%Y') }}</time></td>
+          <td>
+            {% if u.id != current_user.id %}
+            <div class="action-btns">
+              <!-- Cambiar estado activo/inactivo -->
+              <form method="POST" action="{{ url_for('toggle_usuario', user_id=u.id) }}" style="display:inline" id="formToggle-{{ u.id }}">
+                <button type="submit"
+                  class="btn btn-sm {% if u.is_active %}btn-warning{% else %}btn-success{% endif %}"
+                  title="{% if u.is_active %}Desactivar{% else %}Activar{% endif %}"
+                  id="btnToggle-{{ u.id }}">
+                  <i class="fa-solid {% if u.is_active %}fa-user-slash{% else %}fa-user-check{% endif %}"></i>
+                  {% if u.is_active %}Desactivar{% else %}Activar{% endif %}
+                </button>
+              </form>
+              <!-- Cambiar rol -->
+              <form method="POST" action="{{ url_for('cambiar_rol', user_id=u.id) }}" style="display:inline" id="formRol-{{ u.id }}"
+                    onsubmit="return confirm('¿Cambiar el rol de {{ u.username }} a {{ 'agente' if u.role == 'cliente' else 'cliente' }}?')">
+                <button type="submit"
+                  class="btn btn-sm btn-secondary"
+                  title="Cambiar rol"
+                  id="btnRol-{{ u.id }}">
+                  <i class="fa-solid fa-rotate"></i>
+                  → {{ 'Agente' if u.role == 'cliente' else 'Cliente' }}
+                </button>
+              </form>
+            </div>
+            {% else %}
+            <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Resumen estadístico -->
+<div class="admin-stats-grid">
+  <div class="admin-stat-card">
+    <i class="fa-solid fa-users"></i>
+    <div>
+      <h3>{{ usuarios | length }}</h3>
+      <p>Total usuarios</p>
+    </div>
+  </div>
+  <div class="admin-stat-card">
+    <i class="fa-solid fa-shield-halved"></i>
+    <div>
+      <h3>{{ usuarios | selectattr('role', 'equalto', 'agente') | list | length }}</h3>
+      <p>Agentes</p>
+    </div>
+  </div>
+  <div class="admin-stat-card">
+    <i class="fa-solid fa-user"></i>
+    <div>
+      <h3>{{ usuarios | selectattr('role', 'equalto', 'cliente') | list | length }}</h3>
+      <p>Clientes</p>
+    </div>
+  </div>
+  <div class="admin-stat-card">
+    <i class="fa-solid fa-user-slash"></i>
+    <div>
+      <h3>{{ usuarios | rejectattr('is_active') | list | length }}</h3>
+      <p>Inactivos</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+{% block title %}Tickets — TicketFlow{% endblock %}
+{% block page_title %}<i class="fa-solid fa-list-check"></i> Tickets{% endblock %}
+
+{% block content %}
+
+<!-- Filtros -->
+<div class="card filters-card">
+  <form method="GET" action="{{ url_for('tickets') }}" id="filtersForm">
+    <div class="filters-row">
+      <!-- Búsqueda -->
+      <div class="search-wrapper">
+        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+        <input
+          type="text"
+          name="q"
+          value="{{ filtros.q }}"
+          placeholder="Buscar tickets..."
+          class="search-input"
+          id="searchInput"
+        />
+      </div>
+
+      <!-- Estado -->
+      <select name="estado" class="filter-select" id="filterEstado" onchange="this.form.submit()">
+        <option value="">Todos los estados</option>
+        <option value="abierto" {% if filtros.estado == 'abierto' %}selected{% endif %}>Abierto</option>
+        <option value="en_progreso" {% if filtros.estado == 'en_progreso' %}selected{% endif %}>En Progreso</option>
+        <option value="resuelto" {% if filtros.estado == 'resuelto' %}selected{% endif %}>Resuelto</option>
+        <option value="cerrado" {% if filtros.estado == 'cerrado' %}selected{% endif %}>Cerrado</option>
+      </select>
+
+      <!-- Prioridad -->
+      <select name="prioridad" class="filter-select" id="filterPrioridad" onchange="this.form.submit()">
+        <option value="">Todas las prioridades</option>
+        <option value="baja" {% if filtros.prioridad == 'baja' %}selected{% endif %}>Baja</option>
+        <option value="media" {% if filtros.prioridad == 'media' %}selected{% endif %}>Media</option>
+        <option value="alta" {% if filtros.prioridad == 'alta' %}selected{% endif %}>Alta</option>
+        <option value="urgente" {% if filtros.prioridad == 'urgente' %}selected{% endif %}>Urgente</option>
+      </select>
+
+      <!-- Categoría -->
+      <select name="categoria" class="filter-select" id="filterCategoria" onchange="this.form.submit()">
+        <option value="">Todas las categorías</option>
+        {% for cat in categorias %}
+        <option value="{{ cat }}" {% if filtros.categoria == cat %}selected{% endif %}>{{ cat }}</option>
+        {% endfor %}
+      </select>
+
+      {% if current_user.is_agente() %}
+      <!-- Asignados a -->
+      <select name="asignado" class="filter-select" id="filterAsignado" onchange="this.form.submit()">
+        <option value="">Todos</option>
+        <option value="yo" {% if filtros.asignado == 'yo' %}selected{% endif %}>Mis tickets</option>
+        <option value="nadie" {% if filtros.asignado == 'nadie' %}selected{% endif %}>Sin asignar</option>
+      </select>
+      {% endif %}
+
+      <button type="submit" class="btn btn-primary btn-sm" id="btnBuscar">
+        <i class="fa-solid fa-magnifying-glass"></i> Buscar
+      </button>
+
+      {% if filtros.estado or filtros.prioridad or filtros.categoria or filtros.asignado or filtros.q %}
+      <a href="{{ url_for('tickets') }}" class="btn btn-ghost btn-sm" id="btnLimpiar">
+        <i class="fa-solid fa-xmark"></i> Limpiar
+      </a>
+      {% endif %}
+    </div>
+  </form>
+</div>
+
+<!-- Conteo resultados -->
+<div class="results-bar">
+  <p>
+    <strong>{{ pagination.total }}</strong> ticket{{ 's' if pagination.total != 1 }}
+    {% if filtros.q %}buscando "<em>{{ filtros.q }}</em>"{% endif %}
+  </p>
+  <a href="{{ url_for('nuevo_ticket') }}" class="btn btn-primary btn-sm" id="btnNuevoTicketList">
+    <i class="fa-solid fa-plus"></i> Nuevo Ticket
+  </a>
+</div>
+
+<!-- Grid de tickets -->
+{% if tickets %}
+<div class="tickets-grid" id="ticketsGrid">
+  {% for t in tickets %}
+  <div class="ticket-card" onclick="window.location='{{ url_for('ticket_detalle', ticket_id=t.id) }}'">
+    <div class="ticket-card-header">
+      <span class="ticket-id">{{ t.ticket_id }}</span>
+      <span class="badge-prioridad badge-{{ t.prioridad }}">
+        <i class="fa-solid {% if t.prioridad == 'urgente' %}fa-fire{% elif t.prioridad == 'alta' %}fa-arrow-up{% elif t.prioridad == 'baja' %}fa-arrow-down{% else %}fa-minus{% endif %}"></i>
+        {{ t.prioridad_label }}
+      </span>
+    </div>
+
+    <h3 class="ticket-card-title">{{ t.titulo }}</h3>
+    <p class="ticket-card-desc">{{ t.descripcion|truncate(100) }}</p>
+
+    <div class="ticket-card-meta">
+      <span class="category-tag">{{ t.categoria }}</span>
+      <span class="badge-estado badge-{{ t.estado }}">{{ t.estado_label }}</span>
+    </div>
+
+    <div class="ticket-card-footer">
+      <div class="user-mini">
+        <div class="avatar-xs" style="background: {{ t.creator.avatar_color }}">{{ t.creator.initials }}</div>
+        <span>{{ t.creator.username }}</span>
+      </div>
+      <div class="ticket-meta-right">
+        {% if t.assignee %}
+        <div class="user-mini assigned-to" title="Asignado a {{ t.assignee.username }}">
+          <i class="fa-solid fa-user-check"></i>
+          <div class="avatar-xs" style="background: {{ t.assignee.avatar_color }}">{{ t.assignee.initials }}</div>
+        </div>
+        {% endif %}
+        <div class="ticket-comments-count" title="Comentarios">
+          <i class="fa-regular fa-comment"></i>
+          {{ t.comments | length }}
+        </div>
+        <time class="ticket-time">{{ t.created_at.strftime('%d/%m/%y') }}</time>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Paginación -->
+{% if pagination.pages > 1 %}
+<div class="pagination">
+  {% if pagination.has_prev %}
+  <a href="{{ url_for('tickets', page=pagination.prev_num, **filtros) }}" class="page-btn" id="pagePrev">
+    <i class="fa-solid fa-chevron-left"></i>
+  </a>
+  {% endif %}
+
+  {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+    {% if p %}
+    <a href="{{ url_for('tickets', page=p, **filtros) }}"
+       class="page-btn {% if p == pagination.page %}active{% endif %}"
+       id="page-{{ p }}">{{ p }}</a>
+    {% else %}
+    <span class="page-ellipsis">…</span>
+    {% endif %}
+  {% endfor %}
+
+  {% if pagination.has_next %}
+  <a href="{{ url_for('tickets', page=pagination.next_num, **filtros) }}" class="page-btn" id="pageNext">
+    <i class="fa-solid fa-chevron-right"></i>
+  </a>
+  {% endif %}
+</div>
+{% endif %}
+
+{% else %}
+<div class="empty-state">
+  <i class="fa-solid fa-inbox"></i>
+  <h3>No hay tickets</h3>
+  <p>{% if filtros.q or filtros.estado or filtros.prioridad %}Prueba ajustando los filtros.{% else %}Crea el primer ticket.{% endif %}</p>
+  <a href="{{ url_for('nuevo_ticket') }}" class="btn btn-primary" id="btnNuevoEmpty">
+    <i class="fa-solid fa-plus"></i> Nuevo Ticket
+  </a>
+</div>
+{% endif %}
+{% endblock %}

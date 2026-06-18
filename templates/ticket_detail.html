@@ -1,0 +1,274 @@
+{% extends 'base.html' %}
+{% block title %}{{ ticket.ticket_id }} — TicketFlow{% endblock %}
+{% block page_title %}
+  <i class="fa-solid fa-ticket"></i>
+  <span class="ticket-id">{{ ticket.ticket_id }}</span>
+{% endblock %}
+
+{% block content %}
+<div class="detail-layout">
+
+  <!-- ── Contenido principal ──────────────────────────── -->
+  <div class="detail-main">
+
+    <!-- Header del ticket -->
+    <div class="card ticket-header-card">
+      <div class="ticket-header-top">
+        <div class="ticket-header-badges">
+          <span class="badge-estado badge-{{ ticket.estado }}" id="badgeEstado">{{ ticket.estado_label }}</span>
+          <span class="badge-prioridad badge-{{ ticket.prioridad }}" id="badgePrioridad">
+            <i class="fa-solid {% if ticket.prioridad == 'urgente' %}fa-fire{% elif ticket.prioridad == 'alta' %}fa-arrow-up{% elif ticket.prioridad == 'baja' %}fa-arrow-down{% else %}fa-minus{% endif %}"></i>
+            {{ ticket.prioridad_label }}
+          </span>
+          <span class="category-tag">{{ ticket.categoria }}</span>
+        </div>
+        {% if current_user.is_agente() %}
+        <div class="ticket-header-actions">
+          <form method="POST" action="{{ url_for('eliminar_ticket', ticket_id=ticket.id) }}" id="formEliminar"
+                onsubmit="return confirm('¿Estás seguro de que deseas eliminar este ticket? Esta acción no se puede deshacer.')">
+            <button type="submit" class="btn btn-danger btn-sm" id="btnEliminarTicket">
+              <i class="fa-solid fa-trash"></i> Eliminar
+            </button>
+          </form>
+        </div>
+        {% endif %}
+      </div>
+
+      <h1 class="ticket-detail-title">{{ ticket.titulo }}</h1>
+      <p class="ticket-detail-desc">{{ ticket.descripcion }}</p>
+
+      <div class="ticket-meta-strip">
+        <div class="meta-item">
+          <i class="fa-solid fa-user"></i>
+          <span>Creado por <strong>{{ ticket.creator.username }}</strong></span>
+        </div>
+        <div class="meta-item">
+          <i class="fa-regular fa-calendar"></i>
+          <span>{{ ticket.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
+        </div>
+        {% if ticket.assignee %}
+        <div class="meta-item">
+          <i class="fa-solid fa-user-check"></i>
+          <span>Asignado a <strong>{{ ticket.assignee.username }}</strong></span>
+        </div>
+        {% endif %}
+        {% if ticket.resolved_at %}
+        <div class="meta-item">
+          <i class="fa-solid fa-circle-check"></i>
+          <span>Resuelto el {{ ticket.resolved_at.strftime('%d/%m/%Y') }}</span>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Sección de comentarios -->
+    <div class="card comments-card">
+      <div class="card-header">
+        <h3>
+          <i class="fa-regular fa-comments"></i>
+          Conversación
+          <span class="comment-count">{{ comentarios | length }}</span>
+        </h3>
+      </div>
+
+      <div class="comments-list" id="commentsList">
+        {% for c in comentarios %}
+        <div class="comment {% if c.es_interno %}comment-interno{% endif %} {% if c.author.id == current_user.id %}comment-mine{% endif %}">
+          <div class="comment-avatar" style="background: {{ c.author.avatar_color }}">
+            {{ c.author.initials }}
+          </div>
+          <div class="comment-body">
+            <div class="comment-header">
+              <strong>{{ c.author.username }}</strong>
+              {% if c.author.is_agente() %}<span class="badge badge-agente-xs"><i class="fa-solid fa-shield-halved"></i> Agente</span>{% endif %}
+              {% if c.es_interno %}<span class="badge badge-interno"><i class="fa-solid fa-eye-slash"></i> Nota interna</span>{% endif %}
+              <time class="comment-time">{{ c.created_at.strftime('%d/%m/%Y %H:%M') }}</time>
+            </div>
+            <p class="comment-text">{{ c.contenido }}</p>
+          </div>
+        </div>
+        {% else %}
+        <div class="comments-empty" id="commentsEmpty">
+          <i class="fa-regular fa-comment-dots"></i>
+          <p>Sin comentarios aún. ¡Sé el primero!</p>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Formulario de comentario -->
+      <div class="comment-form-wrapper">
+        <form method="POST" action="{{ url_for('comentar_ticket', ticket_id=ticket.id) }}" id="commentForm">
+          <div class="comment-input-row">
+            <div class="comment-avatar" style="background: {{ current_user.avatar_color }}">
+              {{ current_user.initials }}
+            </div>
+            <div class="comment-input-wrap">
+              <textarea
+                name="contenido"
+                id="commentInput"
+                placeholder="Escribe tu comentario..."
+                rows="3"
+                class="textarea-field"
+                required
+              ></textarea>
+              {% if current_user.is_agente() %}
+              <label class="checkbox-label" id="checkInterno">
+                <input type="checkbox" name="es_interno" id="checkInternoInput" />
+                <span class="checkmark"></span>
+                <i class="fa-solid fa-eye-slash"></i>
+                Nota interna (solo visible para agentes)
+              </label>
+              {% endif %}
+            </div>
+          </div>
+          <div class="comment-form-footer">
+            <button type="submit" class="btn btn-primary btn-sm" id="btnEnviarComment">
+              <i class="fa-solid fa-paper-plane"></i> Enviar comentario
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Historial -->
+    <div class="card history-card">
+      <div class="card-header">
+        <h3><i class="fa-solid fa-clock-rotate-left"></i> Historial de cambios</h3>
+        <button class="btn btn-ghost btn-sm" id="btnToggleHistory" onclick="toggleHistory()">
+          <i class="fa-solid fa-chevron-down" id="historyIcon"></i>
+        </button>
+      </div>
+      <div class="history-list" id="historyList">
+        {% for h in historial %}
+        <div class="history-item">
+          <div class="history-dot"></div>
+          <div class="history-content">
+            <span class="history-actor">{{ h.actor.username }}</span>
+            <span class="history-action">{{ h.accion }}</span>
+            {% if h.valor_anterior and h.valor_nuevo %}
+            <span class="history-change">
+              <span class="history-old">{{ h.valor_anterior }}</span>
+              <i class="fa-solid fa-arrow-right"></i>
+              <span class="history-new">{{ h.valor_nuevo }}</span>
+            </span>
+            {% endif %}
+            <time class="history-time">{{ h.created_at.strftime('%d/%m/%Y %H:%M') }}</time>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Panel lateral ──────────────────────────────── -->
+  <aside class="detail-side">
+
+    {% if current_user.is_agente() %}
+    <!-- Gestión de estado -->
+    <div class="card side-card">
+      <h4 class="side-card-title"><i class="fa-solid fa-toggle-on"></i> Estado</h4>
+      <form method="POST" action="{{ url_for('actualizar_ticket', ticket_id=ticket.id) }}" id="formEstado">
+        <input type="hidden" name="campo" value="estado" />
+        <div class="status-buttons">
+          {% for est, label in [('abierto','Abierto'),('en_progreso','En Progreso'),('resuelto','Resuelto'),('cerrado','Cerrado')] %}
+          <button type="submit" name="valor" value="{{ est }}"
+            class="status-btn status-{{ est }} {% if ticket.estado == est %}active{% endif %}"
+            id="btnEstado-{{ est }}">
+            {{ label }}
+          </button>
+          {% endfor %}
+        </div>
+      </form>
+    </div>
+
+    <!-- Gestión de prioridad -->
+    <div class="card side-card">
+      <h4 class="side-card-title"><i class="fa-solid fa-signal"></i> Prioridad</h4>
+      <form method="POST" action="{{ url_for('actualizar_ticket', ticket_id=ticket.id) }}" id="formPrioridad">
+        <input type="hidden" name="campo" value="prioridad" />
+        <div class="priority-buttons">
+          {% for prio, label in [('baja','Baja'),('media','Media'),('alta','Alta'),('urgente','Urgente')] %}
+          <button type="submit" name="valor" value="{{ prio }}"
+            class="prio-btn badge-prioridad badge-{{ prio }} {% if ticket.prioridad == prio %}active{% endif %}"
+            id="btnPrio-{{ prio }}">
+            {{ label }}
+          </button>
+          {% endfor %}
+        </div>
+      </form>
+    </div>
+
+    <!-- Asignar agente -->
+    <div class="card side-card">
+      <h4 class="side-card-title"><i class="fa-solid fa-user-check"></i> Asignar a</h4>
+      <form method="POST" action="{{ url_for('actualizar_ticket', ticket_id=ticket.id) }}" id="formAsignar">
+        <input type="hidden" name="campo" value="asignado" />
+        <select name="valor" class="select-field" onchange="this.form.submit()" id="selectAgente">
+          <option value="0">Sin asignar</option>
+          {% for ag in agentes %}
+          <option value="{{ ag.id }}" {% if ticket.assigned_to == ag.id %}selected{% endif %}>
+            {{ ag.username }}
+          </option>
+          {% endfor %}
+        </select>
+      </form>
+    </div>
+    {% endif %}
+
+    <!-- Información del ticket -->
+    <div class="card side-card">
+      <h4 class="side-card-title"><i class="fa-solid fa-circle-info"></i> Información</h4>
+      <ul class="info-list">
+        <li>
+          <span class="info-label">ID</span>
+          <span class="info-value ticket-id">{{ ticket.ticket_id }}</span>
+        </li>
+        <li>
+          <span class="info-label">Categoría</span>
+          <span class="info-value">{{ ticket.categoria }}</span>
+        </li>
+        <li>
+          <span class="info-label">Creado</span>
+          <span class="info-value">{{ ticket.created_at.strftime('%d/%m/%Y') }}</span>
+        </li>
+        <li>
+          <span class="info-label">Actualizado</span>
+          <span class="info-value">{{ ticket.updated_at.strftime('%d/%m/%Y') }}</span>
+        </li>
+        <li>
+          <span class="info-label">Comentarios</span>
+          <span class="info-value">{{ comentarios | length }}</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Creado por -->
+    <div class="card side-card">
+      <h4 class="side-card-title"><i class="fa-solid fa-user"></i> Creado por</h4>
+      <div class="user-profile-mini">
+        <div class="user-avatar" style="background: {{ ticket.creator.avatar_color }}">
+          {{ ticket.creator.initials }}
+        </div>
+        <div>
+          <p class="profile-name">{{ ticket.creator.username }}</p>
+          <p class="profile-email">{{ ticket.creator.email }}</p>
+        </div>
+      </div>
+    </div>
+
+  </aside>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function toggleHistory() {
+  const list = document.getElementById('historyList');
+  const icon = document.getElementById('historyIcon');
+  list.classList.toggle('collapsed');
+  icon.className = list.classList.contains('collapsed')
+    ? 'fa-solid fa-chevron-right'
+    : 'fa-solid fa-chevron-down';
+}
+</script>
+{% endblock %}

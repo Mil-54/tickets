@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% block title %}Registro — TicketFlow{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+  <div class="auth-bg">
+    <div class="auth-orb orb-1"></div>
+    <div class="auth-orb orb-2"></div>
+    <div class="auth-orb orb-3"></div>
+  </div>
+
+  <div class="auth-card auth-card-wide">
+    <div class="auth-header">
+      <div class="auth-logo">
+        <i class="fa-solid fa-ticket"></i>
+      </div>
+      <h1>Crear cuenta</h1>
+      <p>Únete a TicketFlow</p>
+    </div>
+
+    <form method="POST" action="{{ url_for('register') }}" class="auth-form" id="registerForm">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="username">Nombre completo</label>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-user input-icon"></i>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              placeholder="Tu nombre"
+              required
+              minlength="3"
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Correo electrónico</label>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-envelope input-icon"></i>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              placeholder="tucorreo@ejemplo.com"
+              required
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="password">Contraseña</label>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-lock input-icon"></i>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              placeholder="Mínimo 6 caracteres"
+              required
+              minlength="6"
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="password2">Confirmar contraseña</label>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-lock input-icon"></i>
+            <input
+              type="password"
+              id="password2"
+              name="password2"
+              placeholder="Repite tu contraseña"
+              required
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Selector de rol -->
+      <div class="form-group">
+        <label>Tipo de cuenta</label>
+        <div class="role-selector">
+          <label class="role-option" id="roleCliente">
+            <input type="radio" name="role" value="cliente" checked />
+            <div class="role-card">
+              <i class="fa-solid fa-user"></i>
+              <span class="role-name">Cliente</span>
+              <span class="role-desc">Crea y hace seguimiento de tus tickets</span>
+            </div>
+          </label>
+          <label class="role-option" id="roleAgente">
+            <input type="radio" name="role" value="agente" />
+            <div class="role-card">
+              <i class="fa-solid fa-shield-halved"></i>
+              <span class="role-name">Agente</span>
+              <span class="role-desc">Gestiona y resuelve los tickets del equipo</span>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-full" id="btnRegister">
+        <i class="fa-solid fa-user-plus"></i>
+        Crear cuenta
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      <p>¿Ya tienes cuenta? <a href="{{ url_for('login') }}" id="linkLogin">Inicia sesión</a></p>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Highlight selected role card
+document.querySelectorAll('.role-option input').forEach(radio => {
+  radio.addEventListener('change', () => {
+    document.querySelectorAll('.role-option').forEach(opt => opt.classList.remove('selected'));
+    radio.closest('.role-option').classList.add('selected');
+  });
+});
+document.querySelector('.role-option input[checked]')?.closest('.role-option').classList.add('selected');
+</script>
+{% endblock %}

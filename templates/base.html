@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Sistema de Tickets{% endblock %}</title>
+  <meta name="description" content="Sistema de gestión de tickets de soporte técnico" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  {% block head %}{% endblock %}
+</head>
+<body>
+
+{% if current_user.is_authenticated %}
+<!-- ── Sidebar ────────────────────────────────────────── -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon"><i class="fa-solid fa-ticket"></i></div>
+    <span class="logo-text">TicketFlow</span>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a href="{{ url_for('dashboard') }}" class="nav-item {% if request.endpoint == 'dashboard' %}active{% endif %}" id="nav-dashboard">
+      <i class="fa-solid fa-gauge-high"></i>
+      <span>Dashboard</span>
+    </a>
+    <a href="{{ url_for('tickets') }}" class="nav-item {% if request.endpoint in ['tickets','ticket_detalle'] %}active{% endif %}" id="nav-tickets">
+      <i class="fa-solid fa-list-check"></i>
+      <span>Tickets</span>
+    </a>
+    <a href="{{ url_for('nuevo_ticket') }}" class="nav-item {% if request.endpoint == 'nuevo_ticket' %}active{% endif %}" id="nav-nuevo">
+      <i class="fa-solid fa-circle-plus"></i>
+      <span>Nuevo Ticket</span>
+    </a>
+    {% if current_user.is_agente() %}
+    <a href="{{ url_for('admin_usuarios') }}" class="nav-item {% if request.endpoint == 'admin_usuarios' %}active{% endif %}" id="nav-admin">
+      <i class="fa-solid fa-users-gear"></i>
+      <span>Usuarios</span>
+    </a>
+    {% endif %}
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="user-avatar" style="background: {{ current_user.avatar_color }}">
+        {{ current_user.initials }}
+      </div>
+      <div class="user-info">
+        <p class="user-name">{{ current_user.username }}</p>
+        <p class="user-role">
+          {% if current_user.is_agente() %}
+          <span class="badge badge-agente"><i class="fa-solid fa-shield-halved"></i> Agente</span>
+          {% else %}
+          <span class="badge badge-cliente"><i class="fa-solid fa-user"></i> Cliente</span>
+          {% endif %}
+        </p>
+      </div>
+    </div>
+    <a href="{{ url_for('logout') }}" class="btn-logout" id="btn-logout" title="Cerrar sesión">
+      <i class="fa-solid fa-arrow-right-from-bracket"></i>
+    </a>
+  </div>
+</aside>
+
+<!-- ── Mobile overlay ────────────────────────────────── -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- ── Main ──────────────────────────────────────────── -->
+<main class="main-content" id="mainContent">
+  <!-- Topbar -->
+  <header class="topbar">
+    <button class="btn-hamburger" id="btnHamburger">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+    <div class="topbar-title">{% block page_title %}{% endblock %}</div>
+    <div class="topbar-actions">
+      <a href="{{ url_for('nuevo_ticket') }}" class="btn btn-primary btn-sm" id="topbar-nuevo-ticket">
+        <i class="fa-solid fa-plus"></i> <span class="hide-mobile">Nuevo Ticket</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Flash messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-container" id="flashContainer">
+      {% for category, message in messages %}
+      <div class="flash flash-{{ category }}">
+        <i class="fa-solid {% if category == 'success' %}fa-circle-check{% elif category == 'error' %}fa-circle-xmark{% elif category == 'warning' %}fa-triangle-exclamation{% else %}fa-circle-info{% endif %}"></i>
+        {{ message }}
+        <button class="flash-close" onclick="this.parentElement.remove()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  {% endwith %}
+
+  <div class="page-content">
+    {% block content %}{% endblock %}
+  </div>
+</main>
+
+{% else %}
+  <!-- Layout sin auth -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-container flash-fixed" id="flashContainer">
+      {% for category, message in messages %}
+      <div class="flash flash-{{ category }}">
+        <i class="fa-solid {% if category == 'success' %}fa-circle-check{% elif category == 'error' %}fa-circle-xmark{% elif category == 'warning' %}fa-triangle-exclamation{% else %}fa-circle-info{% endif %}"></i>
+        {{ message }}
+        <button class="flash-close" onclick="this.parentElement.remove()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+{% endif %}
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

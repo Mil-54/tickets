@@ -1,0 +1,200 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard — TicketFlow{% endblock %}
+{% block page_title %}<i class="fa-solid fa-gauge-high"></i> Dashboard{% endblock %}
+
+{% block content %}
+
+<!-- Métricas principales -->
+<div class="stats-grid">
+  <div class="stat-card stat-total">
+    <div class="stat-icon"><i class="fa-solid fa-ticket"></i></div>
+    <div class="stat-info">
+      <p class="stat-label">Total tickets</p>
+      <h2 class="stat-value" data-target="{{ total }}">{{ total }}</h2>
+    </div>
+    <div class="stat-sparkle"></div>
+  </div>
+
+  <div class="stat-card stat-abierto">
+    <div class="stat-icon"><i class="fa-solid fa-folder-open"></i></div>
+    <div class="stat-info">
+      <p class="stat-label">Abiertos</p>
+      <h2 class="stat-value" data-target="{{ abiertos }}">{{ abiertos }}</h2>
+    </div>
+    <div class="stat-sparkle"></div>
+  </div>
+
+  <div class="stat-card stat-progreso">
+    <div class="stat-icon"><i class="fa-solid fa-spinner"></i></div>
+    <div class="stat-info">
+      <p class="stat-label">En progreso</p>
+      <h2 class="stat-value" data-target="{{ en_progreso }}">{{ en_progreso }}</h2>
+    </div>
+    <div class="stat-sparkle"></div>
+  </div>
+
+  <div class="stat-card stat-resuelto">
+    <div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div>
+    <div class="stat-info">
+      <p class="stat-label">Resueltos</p>
+      <h2 class="stat-value" data-target="{{ resueltos }}">{{ resueltos }}</h2>
+    </div>
+    <div class="stat-sparkle"></div>
+  </div>
+
+  <div class="stat-card stat-cerrado">
+    <div class="stat-icon"><i class="fa-solid fa-lock"></i></div>
+    <div class="stat-info">
+      <p class="stat-label">Cerrados</p>
+      <h2 class="stat-value" data-target="{{ cerrados }}">{{ cerrados }}</h2>
+    </div>
+    <div class="stat-sparkle"></div>
+  </div>
+</div>
+
+<!-- Grid: tickets recientes + stats categoría -->
+<div class="dashboard-grid">
+  <!-- Tickets recientes -->
+  <div class="card card-lg">
+    <div class="card-header">
+      <h3><i class="fa-solid fa-clock-rotate-left"></i> Tickets Recientes</h3>
+      <a href="{{ url_for('tickets') }}" class="btn btn-ghost btn-sm">Ver todos</a>
+    </div>
+    <div class="ticket-table-wrapper">
+      <table class="ticket-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Título</th>
+            <th>Categoría</th>
+            <th>Prioridad</th>
+            <th>Estado</th>
+            {% if current_user.is_agente() %}
+            <th>Creado por</th>
+            {% endif %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for t in recientes %}
+          <tr class="ticket-row" onclick="window.location='{{ url_for('ticket_detalle', ticket_id=t.id) }}'">
+            <td><span class="ticket-id">{{ t.ticket_id }}</span></td>
+            <td class="ticket-title-cell">{{ t.titulo|truncate(50) }}</td>
+            <td><span class="category-tag">{{ t.categoria }}</span></td>
+            <td><span class="badge-prioridad badge-{{ t.prioridad }}">{{ t.prioridad_label }}</span></td>
+            <td><span class="badge-estado badge-{{ t.estado }}">{{ t.estado_label }}</span></td>
+            {% if current_user.is_agente() %}
+            <td>
+              <div class="user-mini">
+                <div class="avatar-xs" style="background:{{ t.creator.avatar_color }}">{{ t.creator.initials }}</div>
+                {{ t.creator.username }}
+              </div>
+            </td>
+            {% endif %}
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="6" class="empty-table">
+              <i class="fa-solid fa-inbox"></i> No hay tickets aún.
+              <a href="{{ url_for('nuevo_ticket') }}">Crea el primero</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Panel lateral -->
+  <div class="dashboard-side">
+
+    {% if current_user.is_agente() and cat_stats %}
+    <!-- Tickets por categoría -->
+    <div class="card">
+      <div class="card-header">
+        <h3><i class="fa-solid fa-chart-pie"></i> Por Categoría</h3>
+      </div>
+      <div class="category-bars">
+        {% set max_count = cat_stats | map(attribute='total') | max %}
+        {% for cs in cat_stats %}
+        <div class="cat-bar-item">
+          <div class="cat-bar-label">
+            <span>{{ cs.nombre }}</span>
+            <strong>{{ cs.total }}</strong>
+          </div>
+          <div class="cat-bar-track">
+            <div class="cat-bar-fill" style="width: {{ (cs.total / max_count * 100) | int }}%"></div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Distribución de estados -->
+    {% if total > 0 %}
+    <div class="card">
+      <div class="card-header">
+        <h3><i class="fa-solid fa-chart-donut"></i> Distribución</h3>
+      </div>
+      <div class="donut-wrapper">
+        <svg class="donut-chart" viewBox="0 0 120 120" id="donutChart">
+          <!-- Renderizado por JS -->
+        </svg>
+        <div class="donut-legend">
+          <div class="legend-item"><span class="legend-dot dot-abierto"></span> Abiertos ({{ abiertos }})</div>
+          <div class="legend-item"><span class="legend-dot dot-progreso"></span> En progreso ({{ en_progreso }})</div>
+          <div class="legend-item"><span class="legend-dot dot-resuelto"></span> Resueltos ({{ resueltos }})</div>
+          <div class="legend-item"><span class="legend-dot dot-cerrado"></span> Cerrados ({{ cerrados }})</div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Acceso rápido -->
+    <div class="card">
+      <div class="card-header">
+        <h3><i class="fa-solid fa-bolt"></i> Acceso Rápido</h3>
+      </div>
+      <div class="quick-actions">
+        <a href="{{ url_for('nuevo_ticket') }}" class="quick-btn" id="quick-nuevo">
+          <i class="fa-solid fa-circle-plus"></i>
+          <span>Nuevo Ticket</span>
+        </a>
+        <a href="{{ url_for('tickets') }}?estado=abierto" class="quick-btn" id="quick-abiertos">
+          <i class="fa-solid fa-folder-open"></i>
+          <span>Ver Abiertos</span>
+        </a>
+        <a href="{{ url_for('tickets') }}?prioridad=urgente" class="quick-btn quick-btn-danger" id="quick-urgentes">
+          <i class="fa-solid fa-fire"></i>
+          <span>Urgentes</span>
+        </a>
+        {% if current_user.is_agente() %}
+        <a href="{{ url_for('tickets') }}?asignado=yo" class="quick-btn" id="quick-asignados">
+          <i class="fa-solid fa-user-check"></i>
+          <span>Mis Asignados</span>
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Donut chart
+const total = {{ total }};
+const data = [
+  { v: {{ abiertos }}, color: '#F59E0B' },
+  { v: {{ en_progreso }}, color: '#3B82F6' },
+  { v: {{ resueltos }}, color: '#10B981' },
+  { v: {{ cerrados }}, color: '#6B7280' },
+];
+drawDonut('donutChart', data, total);
+
+// Animate stat counters
+document.querySelectorAll('.stat-value[data-target]').forEach(el => {
+  animateCounter(el, parseInt(el.dataset.target));
+});
+</script>
+{% endblock %}
