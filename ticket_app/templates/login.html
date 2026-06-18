@@ -18,7 +18,8 @@
       <p>Ingresa a tu cuenta para continuar</p>
     </div>
 
-    <form method="POST" action="{{ url_for('login') }}" class="auth-form" id="loginForm">
+    <form method="POST" action="{{ url_for('auth.login') }}" class="auth-form" id="loginForm">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <div class="form-group">
         <label for="email">Correo electrónico</label>
         <div class="input-wrapper">
@@ -59,7 +60,7 @@
     </form>
 
     <div class="auth-footer">
-      <p>¿No tienes cuenta? <a href="{{ url_for('register') }}" id="linkRegister">Regístrate</a></p>
+      <p>¿No tienes cuenta? <a href="{{ url_for('auth.register') }}" id="linkRegister">Regístrate</a></p>
     </div>
 
     <!-- Demo credentials -->

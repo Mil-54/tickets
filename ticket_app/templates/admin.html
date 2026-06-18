@@ -64,7 +64,8 @@
             {% if u.id != current_user.id %}
             <div class="action-btns">
               <!-- Cambiar estado activo/inactivo -->
-              <form method="POST" action="{{ url_for('toggle_usuario', user_id=u.id) }}" style="display:inline" id="formToggle-{{ u.id }}">
+              <form method="POST" action="{{ url_for('admin.toggle_usuario', user_id=u.id) }}" style="display:inline" id="formToggle-{{ u.id }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit"
                   class="btn btn-sm {% if u.is_active %}btn-warning{% else %}btn-success{% endif %}"
                   title="{% if u.is_active %}Desactivar{% else %}Activar{% endif %}"
@@ -74,8 +75,9 @@
                 </button>
               </form>
               <!-- Cambiar rol -->
-              <form method="POST" action="{{ url_for('cambiar_rol', user_id=u.id) }}" style="display:inline" id="formRol-{{ u.id }}"
+              <form method="POST" action="{{ url_for('admin.cambiar_rol', user_id=u.id) }}" style="display:inline" id="formRol-{{ u.id }}"
                     onsubmit="return confirm('¿Cambiar el rol de {{ u.username }} a {{ 'agente' if u.role == 'cliente' else 'cliente' }}?')">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit"
                   class="btn btn-sm btn-secondary"
                   title="Cambiar rol"

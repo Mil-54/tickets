@@ -58,7 +58,7 @@
   <div class="card card-lg">
     <div class="card-header">
       <h3><i class="fa-solid fa-clock-rotate-left"></i> Tickets Recientes</h3>
-      <a href="{{ url_for('tickets') }}" class="btn btn-ghost btn-sm">Ver todos</a>
+      <a href="{{ url_for('tickets.tickets') }}" class="btn btn-ghost btn-sm">Ver todos</a>
     </div>
     <div class="ticket-table-wrapper">
       <table class="ticket-table">
@@ -76,7 +76,7 @@
         </thead>
         <tbody>
           {% for t in recientes %}
-          <tr class="ticket-row" onclick="window.location='{{ url_for('ticket_detalle', ticket_id=t.id) }}'">
+          <tr class="ticket-row" onclick="window.location='{{ url_for('tickets.ticket_detalle', ticket_id=t.id) }}'">
             <td><span class="ticket-id">{{ t.ticket_id }}</span></td>
             <td class="ticket-title-cell">{{ t.titulo|truncate(50) }}</td>
             <td><span class="category-tag">{{ t.categoria }}</span></td>
@@ -95,7 +95,7 @@
           <tr>
             <td colspan="6" class="empty-table">
               <i class="fa-solid fa-inbox"></i> No hay tickets aún.
-              <a href="{{ url_for('nuevo_ticket') }}">Crea el primero</a>
+              <a href="{{ url_for('tickets.nuevo_ticket') }}">Crea el primero</a>
             </td>
           </tr>
           {% endfor %}
@@ -156,20 +156,20 @@
         <h3><i class="fa-solid fa-bolt"></i> Acceso Rápido</h3>
       </div>
       <div class="quick-actions">
-        <a href="{{ url_for('nuevo_ticket') }}" class="quick-btn" id="quick-nuevo">
+        <a href="{{ url_for('tickets.nuevo_ticket') }}" class="quick-btn" id="quick-nuevo">
           <i class="fa-solid fa-circle-plus"></i>
           <span>Nuevo Ticket</span>
         </a>
-        <a href="{{ url_for('tickets') }}?estado=abierto" class="quick-btn" id="quick-abiertos">
+        <a href="{{ url_for('tickets.tickets') }}?estado=abierto" class="quick-btn" id="quick-abiertos">
           <i class="fa-solid fa-folder-open"></i>
           <span>Ver Abiertos</span>
         </a>
-        <a href="{{ url_for('tickets') }}?prioridad=urgente" class="quick-btn quick-btn-danger" id="quick-urgentes">
+        <a href="{{ url_for('tickets.tickets') }}?prioridad=urgente" class="quick-btn quick-btn-danger" id="quick-urgentes">
           <i class="fa-solid fa-fire"></i>
           <span>Urgentes</span>
         </a>
         {% if current_user.is_agente() %}
-        <a href="{{ url_for('tickets') }}?asignado=yo" class="quick-btn" id="quick-asignados">
+        <a href="{{ url_for('tickets.tickets') }}?asignado=yo" class="quick-btn" id="quick-asignados">
           <i class="fa-solid fa-user-check"></i>
           <span>Mis Asignados</span>
         </a>

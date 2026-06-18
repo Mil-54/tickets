@@ -7,12 +7,13 @@
   <div class="card form-card">
     <div class="card-header">
       <h3><i class="fa-solid fa-circle-plus"></i> Crear nuevo ticket</h3>
-      <a href="{{ url_for('tickets') }}" class="btn btn-ghost btn-sm">
+      <a href="{{ url_for('tickets.tickets') }}" class="btn btn-ghost btn-sm">
         <i class="fa-solid fa-arrow-left"></i> Volver
       </a>
     </div>
 
-    <form method="POST" action="{{ url_for('nuevo_ticket') }}" id="newTicketForm">
+    <form method="POST" action="{{ url_for('tickets.nuevo_ticket') }}" id="newTicketForm">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <div class="form-grid">
         <!-- Título -->
         <div class="form-group form-col-full">
@@ -93,7 +94,7 @@
       </div>
 
       <div class="form-actions">
-        <a href="{{ url_for('tickets') }}" class="btn btn-ghost" id="btnCancelar">
+        <a href="{{ url_for('tickets.tickets') }}" class="btn btn-ghost" id="btnCancelar">
           <i class="fa-solid fa-xmark"></i> Cancelar
         </a>
         <button type="submit" class="btn btn-primary" id="btnCrearTicket">

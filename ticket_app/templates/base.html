@@ -23,20 +23,20 @@
   </div>
 
   <nav class="sidebar-nav">
-    <a href="{{ url_for('dashboard') }}" class="nav-item {% if request.endpoint == 'dashboard' %}active{% endif %}" id="nav-dashboard">
+    <a href="{{ url_for('main.dashboard') }}" class="nav-item {% if request.endpoint == 'main.dashboard' %}active{% endif %}" id="nav-dashboard">
       <i class="fa-solid fa-gauge-high"></i>
       <span>Dashboard</span>
     </a>
-    <a href="{{ url_for('tickets') }}" class="nav-item {% if request.endpoint in ['tickets','ticket_detalle'] %}active{% endif %}" id="nav-tickets">
+    <a href="{{ url_for('tickets.tickets') }}" class="nav-item {% if request.endpoint in ['tickets.tickets','tickets.ticket_detalle'] %}active{% endif %}" id="nav-tickets">
       <i class="fa-solid fa-list-check"></i>
       <span>Tickets</span>
     </a>
-    <a href="{{ url_for('nuevo_ticket') }}" class="nav-item {% if request.endpoint == 'nuevo_ticket' %}active{% endif %}" id="nav-nuevo">
+    <a href="{{ url_for('tickets.nuevo_ticket') }}" class="nav-item {% if request.endpoint == 'tickets.nuevo_ticket' %}active{% endif %}" id="nav-nuevo">
       <i class="fa-solid fa-circle-plus"></i>
       <span>Nuevo Ticket</span>
     </a>
     {% if current_user.is_agente() %}
-    <a href="{{ url_for('admin_usuarios') }}" class="nav-item {% if request.endpoint == 'admin_usuarios' %}active{% endif %}" id="nav-admin">
+    <a href="{{ url_for('admin.admin_usuarios') }}" class="nav-item {% if request.endpoint == 'admin.admin_usuarios' %}active{% endif %}" id="nav-admin">
       <i class="fa-solid fa-users-gear"></i>
       <span>Usuarios</span>
     </a>
@@ -59,7 +59,7 @@
         </p>
       </div>
     </div>
-    <a href="{{ url_for('logout') }}" class="btn-logout" id="btn-logout" title="Cerrar sesión">
+    <a href="{{ url_for('auth.logout') }}" class="btn-logout" id="btn-logout" title="Cerrar sesión">
       <i class="fa-solid fa-arrow-right-from-bracket"></i>
     </a>
   </div>
@@ -77,7 +77,7 @@
     </button>
     <div class="topbar-title">{% block page_title %}{% endblock %}</div>
     <div class="topbar-actions">
-      <a href="{{ url_for('nuevo_ticket') }}" class="btn btn-primary btn-sm" id="topbar-nuevo-ticket">
+      <a href="{{ url_for('tickets.nuevo_ticket') }}" class="btn btn-primary btn-sm" id="topbar-nuevo-ticket">
         <i class="fa-solid fa-plus"></i> <span class="hide-mobile">Nuevo Ticket</span>
       </a>
     </div>

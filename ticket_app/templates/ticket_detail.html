@@ -24,8 +24,9 @@
         </div>
         {% if current_user.is_agente() %}
         <div class="ticket-header-actions">
-          <form method="POST" action="{{ url_for('eliminar_ticket', ticket_id=ticket.id) }}" id="formEliminar"
+          <form method="POST" action="{{ url_for('tickets.eliminar_ticket', ticket_id=ticket.id) }}" id="formEliminar"
                 onsubmit="return confirm('¿Estás seguro de que deseas eliminar este ticket? Esta acción no se puede deshacer.')">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn btn-danger btn-sm" id="btnEliminarTicket">
               <i class="fa-solid fa-trash"></i> Eliminar
             </button>
@@ -97,7 +98,8 @@
 
       <!-- Formulario de comentario -->
       <div class="comment-form-wrapper">
-        <form method="POST" action="{{ url_for('comentar_ticket', ticket_id=ticket.id) }}" id="commentForm">
+        <form method="POST" action="{{ url_for('tickets.comentar_ticket', ticket_id=ticket.id) }}" id="commentForm">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <div class="comment-input-row">
             <div class="comment-avatar" style="background: {{ current_user.avatar_color }}">
               {{ current_user.initials }}
@@ -167,7 +169,8 @@
     <!-- Gestión de estado -->
     <div class="card side-card">
       <h4 class="side-card-title"><i class="fa-solid fa-toggle-on"></i> Estado</h4>
-      <form method="POST" action="{{ url_for('actualizar_ticket', ticket_id=ticket.id) }}" id="formEstado">
+      <form method="POST" action="{{ url_for('tickets.actualizar_ticket', ticket_id=ticket.id) }}" id="formEstado">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="campo" value="estado" />
         <div class="status-buttons">
           {% for est, label in [('abierto','Abierto'),('en_progreso','En Progreso'),('resuelto','Resuelto'),('cerrado','Cerrado')] %}
@@ -184,7 +187,8 @@
     <!-- Gestión de prioridad -->
     <div class="card side-card">
       <h4 class="side-card-title"><i class="fa-solid fa-signal"></i> Prioridad</h4>
-      <form method="POST" action="{{ url_for('actualizar_ticket', ticket_id=ticket.id) }}" id="formPrioridad">
+      <form method="POST" action="{{ url_for('tickets.actualizar_ticket', ticket_id=ticket.id) }}" id="formPrioridad">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="campo" value="prioridad" />
         <div class="priority-buttons">
           {% for prio, label in [('baja','Baja'),('media','Media'),('alta','Alta'),('urgente','Urgente')] %}
@@ -201,7 +205,8 @@
     <!-- Asignar agente -->
     <div class="card side-card">
       <h4 class="side-card-title"><i class="fa-solid fa-user-check"></i> Asignar a</h4>
-      <form method="POST" action="{{ url_for('actualizar_ticket', ticket_id=ticket.id) }}" id="formAsignar">
+      <form method="POST" action="{{ url_for('tickets.actualizar_ticket', ticket_id=ticket.id) }}" id="formAsignar">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="campo" value="asignado" />
         <select name="valor" class="select-field" onchange="this.form.submit()" id="selectAgente">
           <option value="0">Sin asignar</option>

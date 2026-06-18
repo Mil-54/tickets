@@ -6,7 +6,7 @@
 
 <!-- Filtros -->
 <div class="card filters-card">
-  <form method="GET" action="{{ url_for('tickets') }}" id="filtersForm">
+  <form method="GET" action="{{ url_for('tickets.tickets') }}" id="filtersForm">
     <div class="filters-row">
       <!-- Búsqueda -->
       <div class="search-wrapper">
@@ -61,7 +61,7 @@
       </button>
 
       {% if filtros.estado or filtros.prioridad or filtros.categoria or filtros.asignado or filtros.q %}
-      <a href="{{ url_for('tickets') }}" class="btn btn-ghost btn-sm" id="btnLimpiar">
+      <a href="{{ url_for('tickets.tickets') }}" class="btn btn-ghost btn-sm" id="btnLimpiar">
         <i class="fa-solid fa-xmark"></i> Limpiar
       </a>
       {% endif %}
@@ -75,7 +75,7 @@
     <strong>{{ pagination.total }}</strong> ticket{{ 's' if pagination.total != 1 }}
     {% if filtros.q %}buscando "<em>{{ filtros.q }}</em>"{% endif %}
   </p>
-  <a href="{{ url_for('nuevo_ticket') }}" class="btn btn-primary btn-sm" id="btnNuevoTicketList">
+  <a href="{{ url_for('tickets.nuevo_ticket') }}" class="btn btn-primary btn-sm" id="btnNuevoTicketList">
     <i class="fa-solid fa-plus"></i> Nuevo Ticket
   </a>
 </div>
@@ -84,7 +84,7 @@
 {% if tickets %}
 <div class="tickets-grid" id="ticketsGrid">
   {% for t in tickets %}
-  <div class="ticket-card" onclick="window.location='{{ url_for('ticket_detalle', ticket_id=t.id) }}'">
+  <div class="ticket-card" onclick="window.location='{{ url_for('tickets.ticket_detalle', ticket_id=t.id) }}'">
     <div class="ticket-card-header">
       <span class="ticket-id">{{ t.ticket_id }}</span>
       <span class="badge-prioridad badge-{{ t.prioridad }}">
@@ -128,14 +128,14 @@
 {% if pagination.pages > 1 %}
 <div class="pagination">
   {% if pagination.has_prev %}
-  <a href="{{ url_for('tickets', page=pagination.prev_num, **filtros) }}" class="page-btn" id="pagePrev">
+  <a href="{{ url_for('tickets.tickets', page=pagination.prev_num, **filtros) }}" class="page-btn" id="pagePrev">
     <i class="fa-solid fa-chevron-left"></i>
   </a>
   {% endif %}
 
   {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
     {% if p %}
-    <a href="{{ url_for('tickets', page=p, **filtros) }}"
+    <a href="{{ url_for('tickets.tickets', page=p, **filtros) }}"
        class="page-btn {% if p == pagination.page %}active{% endif %}"
        id="page-{{ p }}">{{ p }}</a>
     {% else %}
@@ -144,7 +144,7 @@
   {% endfor %}
 
   {% if pagination.has_next %}
-  <a href="{{ url_for('tickets', page=pagination.next_num, **filtros) }}" class="page-btn" id="pageNext">
+  <a href="{{ url_for('tickets.tickets', page=pagination.next_num, **filtros) }}" class="page-btn" id="pageNext">
     <i class="fa-solid fa-chevron-right"></i>
   </a>
   {% endif %}
@@ -156,7 +156,7 @@
   <i class="fa-solid fa-inbox"></i>
   <h3>No hay tickets</h3>
   <p>{% if filtros.q or filtros.estado or filtros.prioridad %}Prueba ajustando los filtros.{% else %}Crea el primer ticket.{% endif %}</p>
-  <a href="{{ url_for('nuevo_ticket') }}" class="btn btn-primary" id="btnNuevoEmpty">
+  <a href="{{ url_for('tickets.nuevo_ticket') }}" class="btn btn-primary" id="btnNuevoEmpty">
     <i class="fa-solid fa-plus"></i> Nuevo Ticket
   </a>
 </div>
