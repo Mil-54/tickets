@@ -62,6 +62,10 @@ def create_app(config_name=None):
     # Configure logging
     configure_logging(app)
     
+    # Register CLI commands
+    from ticket_app.commands import seed_db
+    app.cli.add_command(seed_db)
+    
     return app
 
 def configure_logging(app):
